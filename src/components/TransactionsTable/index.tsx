@@ -1,48 +1,60 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { api } from "../../services/api";
 import { Container } from "./styles";
 
+interface ITransactionProps{
+    id: number,
+    title: string,
+    amount: number,
+    type: string,
+    category: string,
+    createAt: string,
+}
 
 export function TransactionsTable(){
+    const [transactions, setTransactions] = useState<ITransactionProps[]>([]);
     
     useEffect(
         () =>{
             api.get("/transactions").then((response) => {
-              console.log(response.data);
+              setTransactions(response.data.transactions);
             });
-        }
+        }, []
     )
 
     
-    return(
-        <Container>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Titulo</th>
-                        <th>Valor</th>
-                        <th>Categoria</th>
-                        <th>Data</th>
-                    </tr>
-                </thead>
+    return (
+      <Container>
+        <table>
+          <thead>
+            <tr>
+              <th>Titulo</th>
+              <th>Valor</th>
+              <th>Categoria</th>
+              <th>Data</th>
+            </tr>
+          </thead>
 
-                <tbody>
-                  
-                    <tr>
-                        <td>Janta</td>
-                        <td className="deposit">R$ 50,00</td>
-                        <td>Alimentação</td>
-                        <td>20/06/2020</td>
-                    </tr>
-                    <tr>
-                        <td>Cabeleleira</td>
-                        <td className="withdraw">- R$ 50,00</td>
-                        <td>Beleza</td>
-                        <td>20/06/2020</td>
-                    </tr>
-            </tbody>
-
-            </table>
-        </Container>
-    )
+          <tbody>
+            {transactions.map((transaction) => (
+              <tr key={transaction.id}>
+                <td>{transaction.title}</td>
+                <td className={transaction.type}>
+                  {new Intl.NumberFormat("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
+                  }).format(transaction.amount)}
+                </td>
+                <td>{transaction.category}</td>
+                <td>
+                  {new Intl.DateTimeFormat("pt-BR").format(
+                    new Date(transaction.createAt)
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Container>
+    );
 }
